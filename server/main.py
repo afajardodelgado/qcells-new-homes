@@ -12,9 +12,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 # Load .env
 load_dotenv()
+
+# Initialize Sentry (optional - only if SENTRY_DSN is set)
+SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").strip()
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=ENVIRONMENT,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=1.0 if ENVIRONMENT == "development" else 0.1,
+        profiles_sample_rate=1.0 if ENVIRONMENT == "development" else 0.1,
+    )
 
 LOGIN_URL = os.getenv("SALESFORCE_LOGIN_URL", "https://test.salesforce.com").strip()
 CLIENT_ID = (os.getenv("SALESFORCE_CLIENT_ID") or "").strip()
@@ -108,9 +123,53 @@ def mint_access_token(login_url: str, client_id: str, username: str, key_path: s
     return data
 
 
+class ErrorLog(BaseModel):
+    message: str
+    filename: Optional[str] = None
+    lineno: Optional[int] = None
+    colno: Optional[int] = None
+    stack: Optional[str] = None
+    timestamp: Optional[str] = None
+    userAgent: Optional[str] = None
+    type: Optional[str] = "error"
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+@app.post("/api/log-error")
+def log_frontend_error(error: ErrorLog):
+    """Log frontend errors to Sentry and application logs"""
+    import logging
+
+    logger = logging.getLogger("frontend_errors")
+    logger.error(
+        f"Frontend Error: {error.message}",
+        extra={
+            "filename": error.filename,
+            "lineno": error.lineno,
+            "colno": error.colno,
+            "stack": error.stack,
+            "timestamp": error.timestamp,
+            "userAgent": error.userAgent,
+            "type": error.type
+        }
+    )
+
+    # Send to Sentry if configured
+    if SENTRY_DSN:
+        with sentry_sdk.push_scope() as scope:
+            scope.set_context("frontend", {
+                "filename": error.filename,
+                "lineno": error.lineno,
+                "colno": error.colno,
+                "userAgent": error.userAgent
+            })
+            sentry_sdk.capture_message(error.message, level="error")
+
+    return {"status": "logged"}
 
 
 @app.post("/api/sf/query")

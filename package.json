@@ -1,0 +1,13 @@
+{
+  "name": "qcells-new-homes-solar-support",
+  "version": "1.0.0",
+  "description": "Q.CELLS New Homes Solar Support Suite - E2E Tests",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

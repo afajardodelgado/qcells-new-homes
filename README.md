@@ -117,6 +117,37 @@ Access the application at: `http://localhost:8000`
 
 ## 🧪 Testing
 
+### Unit Tests (Pytest)
+
+Run backend tests:
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=server
+```
+
+### E2E Tests (Playwright)
+
+Run end-to-end tests:
+```bash
+# Install Playwright
+npm install
+
+# Install browsers
+npx playwright install
+
+# Run E2E tests
+npm run test:e2e
+
+# Run with UI
+npm run test:e2e:ui
+```
+
 ### API Endpoints
 
 **Health Check:**
@@ -154,7 +185,8 @@ curl -X POST http://localhost:8000/api/sf/query \
    - Use `https://login.salesforce.com` for production
    - Restrict `CORS_ORIGINS` to specific domains
    - Store private key outside repository
-   - Use environment variable management (e.g., AWS Secrets Manager)
+   - Use environment variable management (Railway, AWS Secrets Manager, etc.)
+   - Enable Sentry error monitoring with `SENTRY_DSN`
 
 3. **Salesforce Connected App:**
    - Enable OAuth scopes: `api`, `refresh_token`, `offline_access`
@@ -212,6 +244,9 @@ This application follows the **Q.CELLS Design Language Standards**. See `qcells-
 - **Server**: Uvicorn with auto-reload
 - **Frontend**: Vanilla JavaScript (ES6+), CSS3
 - **Typography**: Pretendard (via CDN)
+- **Error Monitoring**: Sentry
+- **Testing**: Pytest (unit), Playwright (E2E)
+- **Deployment**: Railway
 
 ## 📝 Development Notes
 
@@ -256,6 +291,16 @@ Proprietary - Q.CELLS New Homes
 ## 📞 Support
 
 For Q.CELLS New Homes internal support, contact the development team.
+
+## 🚀 Deployment
+
+See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed Railway deployment instructions.
+
+**Quick Deploy to Railway:**
+1. Push code to GitHub
+2. Connect Railway to your repo
+3. Configure environment variables
+4. Deploy automatically on push to main
 
 ---
 

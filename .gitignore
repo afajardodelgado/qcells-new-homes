@@ -19,8 +19,7 @@ venv/
 
 # Env and keys
 .env
-.env.*
-!.env.example
+.env.local
 server.key
 *.pem
 *.key
@@ -28,3 +27,14 @@ server.key
 # IDE
 .vscode/
 .idea/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+playwright-report/
+test-results/
+
+# Node (for Playwright)
+node_modules/
+package-lock.json

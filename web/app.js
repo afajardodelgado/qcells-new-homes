@@ -1,5 +1,49 @@
 // Simple SPA-like navigation and Salesforce query demo
 
+// Global error handler - logs to backend
+window.addEventListener('error', async (event) => {
+  const errorData = {
+    message: event.message,
+    filename: event.filename,
+    lineno: event.lineno,
+    colno: event.colno,
+    stack: event.error?.stack || 'No stack trace',
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent
+  };
+
+  try {
+    await fetch('/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(errorData)
+    });
+  } catch (err) {
+    console.error('Failed to log error to backend:', err);
+  }
+});
+
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', async (event) => {
+  const errorData = {
+    message: event.reason?.message || String(event.reason),
+    stack: event.reason?.stack || 'No stack trace',
+    timestamp: new Date().toISOString(),
+    userAgent: navigator.userAgent,
+    type: 'unhandledrejection'
+  };
+
+  try {
+    await fetch('/api/log-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(errorData)
+    });
+  } catch (err) {
+    console.error('Failed to log promise rejection to backend:', err);
+  }
+});
+
 const navItems = document.querySelectorAll('.nav-item');
 const sections = {
   homes: document.getElementById('section-homes'),
