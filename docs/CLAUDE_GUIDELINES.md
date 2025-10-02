@@ -189,12 +189,10 @@ When working on new features or changes:
 5. **Execute git commands ONE AT A TIME:**
    - Step 1: `git add .`
    - Step 2: `git commit -m "descriptive message"`
-   - Step 3: `git push origin feature-name`
-   - Step 4: `git checkout main`
-   - Step 5: `git merge feature-name`
-   - Step 6: `git push origin main`
-   - Step 7: `git branch -d feature-name`
-   - Step 8: `git push origin --delete feature-name`
+   - Step 3: `git checkout main`
+   - Step 4: `git merge feature-name`
+   - Step 5: `git push origin main`
+   - Step 6: `git branch -d feature-name`
 
 **Command Reference (execute ONE at a time):**
 ```bash
@@ -204,23 +202,17 @@ git add .
 # Step 2: Commit with message
 git commit -m "descriptive message"
 
-# Step 3: Push feature branch
-git push origin feature-name
-
-# Step 4: Switch to main
+# Step 3: Switch to main
 git checkout main
 
-# Step 5: Merge feature branch
+# Step 4: Merge feature branch
 git merge feature-name
 
-# Step 6: Push to main
+# Step 5: Push to main
 git push origin main
 
-# Step 7: Delete local branch
+# Step 6: Delete local branch
 git branch -d feature-name
-
-# Step 8: Delete remote branch
-git push origin --delete feature-name
 ```
 
 **Never create Pull Requests.** All code goes directly to main after local verification and branch cleanup.
@@ -281,22 +273,16 @@ git add .
 git commit -m "descriptive commit message"
 
 # Command 3:
-git push origin feature-name
-
-# Command 4:
 git checkout main
 
-# Command 5:
+# Command 4:
 git merge feature-name
 
-# Command 6:
+# Command 5:
 git push origin main
 
-# Command 7:
+# Command 6:
 git branch -d feature-name
-
-# Command 8:
-git push origin --delete feature-name
 ```
 
 **If any step fails, STOP and FIX IT before continuing. Keep branches clean by always deleting after merge.**
@@ -392,14 +378,12 @@ pkill -f uvicorn
 # On feature branch:
 git add .
 git commit -m "message"
-git push origin feature-name
 
 # Merge and cleanup:
 git checkout main
 git merge feature-name
 git push origin main
 git branch -d feature-name
-git push origin --delete feature-name
 ```
 
 ---
