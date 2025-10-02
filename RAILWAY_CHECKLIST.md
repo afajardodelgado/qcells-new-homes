@@ -36,9 +36,12 @@ cat server.key
 - Clear warnings for security issues (CORS=*, sandbox in prod, etc.)
 
 ### 3. ✅ Nixpacks Build Configuration
-**Problem:** Python from Nix doesn't include pip by default.
+**Problem:** Python from Nix doesn't include pip by default, and `python312Packages.pip` didn't work.
 
-**Solution:** Added `python312Packages.pip` to nixpacks.toml.
+**Solution:** Create a Python virtual environment which always includes pip:
+- `python3 -m venv /opt/venv` creates venv with pip bundled
+- Install packages using `/opt/venv/bin/pip`
+- Run app using `/opt/venv/bin/uvicorn`
 
 ## 🚀 Railway Deployment Steps
 
