@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Solar Support Suite</title>
+    <title>Qcells New Homes: Builder and Installer Admin Portal</title>
     <!-- Pretendard (open-source) font -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="/static/styles.css" />
@@ -15,13 +15,13 @@
           <img src="/assets/qcells-new-homes-navy-logo-scaled-1-2048x346.webp" alt="New Homes Logo" class="logo" />
         </div>
         <nav class="nav">
-          <a class="nav-item active" data-section="homes">
+          <a class="nav-item active" data-section="builders">
             <span class="icon">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 2.5L2.5 8.33333V17.5H7.5V12.5H12.5V17.5H17.5V8.33333L10 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M13.75 8.75L16.25 6.25L13.75 3.75L11.25 6.25M13.75 8.75L8.75 13.75M13.75 8.75L11.25 6.25M8.75 13.75L3.75 18.75L1.25 16.25L6.25 11.25M8.75 13.75L6.25 11.25M11.25 6.25L6.25 11.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </span>
-            <span>Homes</span>
+            <span>Builders</span>
           </a>
           <a class="nav-item" data-section="pricing">
             <span class="icon">
@@ -60,16 +60,25 @@
             </span>
             <span>Support</span>
           </a>
+          <a class="nav-item" data-section="homes">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2.5C10.9205 2.5 11.6667 3.24619 11.6667 4.16667C11.6667 5.08714 10.9205 5.83333 10 5.83333C9.07952 5.83333 8.33333 5.08714 8.33333 4.16667C8.33333 3.24619 9.07952 2.5 10 2.5ZM10 14.1667C10.9205 14.1667 11.6667 14.9129 11.6667 15.8333C11.6667 16.7538 10.9205 17.5 10 17.5C9.07952 17.5 8.33333 16.7538 8.33333 15.8333C8.33333 14.9129 9.07952 14.1667 10 14.1667ZM15.8333 8.33333C16.7538 8.33333 17.5 9.07952 17.5 10C17.5 10.9205 16.7538 11.6667 15.8333 11.6667C14.9129 11.6667 14.1667 10.9205 14.1667 10C14.1667 9.07952 14.9129 8.33333 15.8333 8.33333ZM4.16667 8.33333C5.08714 8.33333 5.83333 9.07952 5.83333 10C5.83333 10.9205 5.08714 11.6667 4.16667 11.6667C3.24619 11.6667 2.5 10.9205 2.5 10C2.5 9.07952 3.24619 8.33333 4.16667 8.33333ZM13.5355 4.46447C14.1213 5.05025 14.1213 5.99975 13.5355 6.58553C12.9497 7.17132 12.0003 7.17132 11.4145 6.58553C10.8287 5.99975 10.8287 5.05025 11.4145 4.46447C12.0003 3.87868 12.9497 3.87868 13.5355 4.46447ZM8.58553 13.4145C9.17132 14.0003 9.17132 14.9497 8.58553 15.5355C7.99975 16.1213 7.05025 16.1213 6.46447 15.5355C5.87868 14.9497 5.87868 14.0003 6.46447 13.4145C7.05025 12.8287 7.99975 12.8287 8.58553 13.4145ZM13.5355 13.4145C14.1213 14.0003 14.1213 14.9497 13.5355 15.5355C12.9497 16.1213 12.0003 16.1213 11.4145 15.5355C10.8287 14.9497 10.8287 14.0003 11.4145 13.4145C12.0003 12.8287 12.9497 12.8287 13.5355 13.4145ZM8.58553 4.46447C9.17132 5.05025 9.17132 5.99975 8.58553 6.58553C7.99975 7.17132 7.05025 7.17132 6.46447 6.58553C5.87868 5.99975 5.87868 5.05025 6.46447 4.46447C7.05025 3.87868 7.99975 3.87868 8.58553 4.46447Z" fill="currentColor"/>
+              </svg>
+            </span>
+            <span>Salesforce Connector</span>
+          </a>
         </nav>
+        <div class="admin-label">Admin view</div>
       </aside>
 
       <main class="content">
         <header class="gnb">
-          <h1 class="title">Solar Support Suite</h1>
+          <h1 class="title">Qcells New Homes: Builder and Installer Admin Portal</h1>
         </header>
 
-        <section id="section-homes" class="section visible">
-          <h2>Homes</h2>
+        <section id="section-homes" class="section">
+          <h2>Salesforce Connector</h2>
           <div class="card">
             <h3>Salesforce Quick Test</h3>
             <div class="row">
@@ -77,6 +86,24 @@
               <button id="runQuery" class="btn primary">Run Query</button>
             </div>
             <pre id="output" class="output">Click Run Query to call /api/sf/query</pre>
+          </div>
+        </section>
+
+        <section id="section-builders" class="section visible">
+          <div class="card">
+            <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="margin: 0;">National Builders</h3>
+              <button id="loadBuilders" class="btn primary">Refresh</button>
+            </div>
+            <div class="row" style="margin-bottom: 16px;">
+              <input 
+                type="text" 
+                id="builderSearch" 
+                class="input" 
+                placeholder="Search by name, city, state, or website..."
+              />
+            </div>
+            <div id="buildersTable"></div>
           </div>
         </section>
 

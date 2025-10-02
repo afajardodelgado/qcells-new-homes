@@ -32,6 +32,8 @@ body {
   border-right: 1px solid var(--border);
   background: var(--sidebar-bg);
   padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .brand {
@@ -82,6 +84,14 @@ body {
 .nav-item:hover { background: rgba(0,0,0,0.04); }
 .nav-item.active { background: var(--sidebar-active-bg); }
 
+.admin-label {
+  margin-top: auto;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
 .content {
   grid-column: 2;
   grid-row: 1 / span 2;
@@ -127,6 +137,12 @@ body {
   border-radius: 8px;
   padding: 0 12px;
   font-size: 14px;
+  font-family: 'Pretendard', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(0, 198, 193, 0.12);
 }
 .btn {
   height: 40px;
@@ -150,4 +166,74 @@ body {
   margin-top: 12px;
   overflow: auto;
   max-height: 320px;
+}
+
+/* Builders Table */
+#buildersTable {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.builders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.builders-table thead {
+  background: #fafafa;
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.builders-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-text);
+  background: #fafafa;
+}
+
+.builders-table tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.builders-table tbody tr:hover {
+  background: #fafafa;
+}
+
+.builders-table td {
+  padding: 12px 16px;
+  color: var(--color-text);
+}
+
+.builders-table a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.builders-table a:hover {
+  text-decoration: underline;
+}
+
+.table-footer {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+#buildersTable p {
+  margin: 16px 0;
+  color: var(--color-muted);
+}
+
+#buildersTable p.error {
+  color: #dc2626;
+  background: #fee2e2;
+  padding: 12px;
+  border-radius: 8px;
 }

@@ -540,3 +540,354 @@ The welcome message is written differently depending on the purpose of the app.
 
 - **Accept All** → covers Terms of Service, Transfer Cross-Borders (outside EU), Privacy Policy
 - User must consent before proceeding
+
+---
+
+## Application UX Patterns
+
+### 1. Auto-Loading Tab Content
+
+**Pattern**: When users navigate to a data-heavy tab, automatically fetch and display content without requiring an explicit "Load" action.
+
+**Implementation**:
+```javascript
+// Listen for tab click
+if (target === 'dataSection') {
+  loadDataFunction();
+}
+```
+
+**Benefits**:
+- Reduces user clicks
+- Feels more responsive
+- Immediate feedback
+
+**Standard**: All data-heavy tabs should auto-load on first view. Provide a "Refresh" button for manual updates.
+
+---
+
+### 2. Scrollable Tables with Sticky Headers
+
+**Pattern**: Large data tables should scroll within their container, not the entire page. Column headers remain visible during scroll.
+
+**Implementation**:
+```css
+/* Table container */
+#tableContainer {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+/* Sticky header */
+table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fafafa;
+}
+```
+
+**Benefits**:
+- Users always see column headers
+- Maintains context while scrolling
+- Better space utilization
+
+**Standard**: Tables with >10 rows should scroll within their container using viewport-relative heights.
+
+---
+
+### 3. Redundancy Reduction
+
+**Pattern**: Avoid duplicating information that's already visible in navigation or context.
+
+**Example**:
+- ❌ **Don't**: Show "Builders" heading when user clicked "Builders" tab
+- ✅ **Do**: Show only specific content title like "National Builders"
+
+**Benefits**:
+- Cleaner UI
+- Less visual noise
+- More content space
+
+**Standard**: Don't repeat section titles when the navigation already clearly indicates the current section.
+
+---
+
+### 4. Role/View Indicators
+
+**Pattern**: Display user's role or view type in a consistent, persistent location.
+
+**Implementation**:
+```html
+<!-- Sidebar footer -->
+<div class="admin-label">Admin view</div>
+```
+
+**Location**: Sidebar footer (bottom-left corner)
+
+**Benefits**:
+- Users always know their access level
+- Context awareness
+- Clear permission boundaries
+
+**Standard**: Show user role/view type in sidebar footer using muted color (gray-500).
+
+---
+
+### 5. Dynamic Viewport Heights
+
+**Pattern**: Use viewport-relative calculations instead of fixed pixel heights to adapt to different screen sizes.
+
+**Implementation**:
+```css
+/* Adaptive height */
+.content-area {
+  max-height: calc(100vh - 250px);
+}
+
+/* NOT this */
+.content-area {
+  max-height: 600px; /* ❌ Fixed height */
+}
+```
+
+**Benefits**:
+- Adapts to different screen sizes
+- Better space utilization
+- Responsive without media queries
+
+**Standard**: Content areas should scale with viewport using `calc(100vh - Xpx)` where X accounts for fixed headers/footers.
+
+---
+
+### 6. Action Button Labeling
+
+**Pattern**: Use precise, context-aware labels for action buttons.
+
+**Guidelines**:
+- **"Load"**: Initial data fetch (before any data exists)
+- **"Refresh"**: Re-fetch data that's already been loaded
+- **"Update"**: Modify existing data
+- **"Save"**: Persist changes
+
+**Benefits**:
+- Clear user expectations
+- Reduced confusion
+- Better discoverability
+
+**Standard**: Use "Refresh" for re-fetching existing content, "Load" only for initial fetching.
+
+---
+
+### 7. Card-Based Content Grouping
+
+**Pattern**: Group related content in card components with consistent styling.
+
+**Implementation**:
+```css
+.card {
+  background: #fff;
+  border: 1px solid #E6E6E6;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+```
+
+**On Background**: 
+- Cards: White (#FFFFFF)
+- Page background: Light gray (#FAFAFA)
+
+**Benefits**:
+- Clear visual hierarchy
+- Content organization
+- Professional appearance
+- Easier to scan
+
+**Standard**: Use white cards on light gray background for grouping related content. Avoid floating content directly on page background.
+
+---
+
+### 8. Progressive Disclosure
+
+**Pattern**: Show essential information first, allow users to access details on demand.
+
+**Examples**:
+- Collapsed sidebar navigation
+- Expandable table rows
+- Modal dialogs for detailed forms
+
+**Standard**: Default to minimal view, provide clear affordances for accessing additional details.
+
+---
+
+### 9. Contextual Empty States
+
+**Pattern**: When tables or lists are empty, provide helpful context rather than blank space.
+
+**Implementation**:
+```javascript
+if (data.length === 0) {
+  return '<p>No builders found.</p>';
+}
+```
+
+**Better**:
+```javascript
+if (data.length === 0) {
+  return '<p>No builders found. <a href="/add">Add your first builder</a></p>';
+}
+```
+
+**Standard**: Empty states should explain why content is missing and suggest next actions when applicable.
+
+---
+
+### 10. Consistent Icon Language
+
+**Pattern**: Use semantic icons that match their function.
+
+**Examples**:
+- 🔨 Hammer: Builders/Construction
+- ⚙️ Gear: Settings/Configuration/Connectors
+- 💰 Dollar: Pricing/Finance
+- 📚 Stack: Training/Learning
+- 🎯 Target: Marketing
+- 🏠 Home: Dashboard/Overview
+
+**Standard**: Icons should be consistent across the application. Use filled icons for active states, outlined for inactive.
+
+---
+
+## Table Design Standards
+
+### Basic Table Structure
+
+**Required Elements**:
+1. Table header (sticky when scrollable)
+2. Clear column labels
+3. Consistent row height
+4. Hover state for rows
+5. Loading state
+6. Empty state
+
+**Spacing**:
+- Header padding: 12px 16px
+- Cell padding: 12px 16px
+- Border: 1px solid gray-200
+
+**Typography**:
+- Headers: body-01-l (14px semibold)
+- Cells: body-01-xs (14px regular)
+
+---
+
+### Interactive Tables
+
+**Hover State**:
+```css
+.table tbody tr:hover {
+  background: #fafafa;
+}
+```
+
+**Links in Tables**:
+- Color: Primary (#00C6C1)
+- No underline by default
+- Underline on hover
+- Open external links in new tab
+
+---
+
+## Navigation Standards
+
+### Tab Behavior
+
+**Default Tab**:
+- First tab should be the most frequently used feature
+- Mark as `active` on page load
+- Auto-load content if data-heavy
+
+**Tab Switching**:
+- Remove `active` class from all tabs
+- Add `active` class to clicked tab
+- Hide all sections
+- Show target section
+- Auto-load content if applicable
+
+**Visual States**:
+- **Default**: Gray text, no background
+- **Hover**: Light gray background
+- **Active**: Primary color icon, light primary background
+
+---
+
+### Sidebar Navigation
+
+**Structure** (top to bottom):
+1. Brand logo
+2. Navigation items
+3. **Footer: Role/view indicator**
+
+**Spacing**:
+- Logo area: 60px height
+- Nav item gap: 6px
+- Nav item padding: 10px 12px
+- Icon size: 20x20px
+- Icon-to-text gap: 12px
+
+---
+
+## Performance Considerations
+
+### Data Loading
+
+**Pattern**: Show loading state → Fetch data → Display results → Handle errors
+
+**Loading States**:
+```javascript
+container.innerHTML = '<p>Loading builders...</p>';
+```
+
+**Error States**:
+```javascript
+container.innerHTML = '<p class="error">Error: ${err.message}</p>';
+```
+
+**Standard**: Always provide immediate visual feedback for async operations.
+
+---
+
+### Caching Strategy
+
+For data that changes infrequently:
+- Cache on first load
+- Provide manual "Refresh" button
+- Auto-refresh on tab re-activation (optional)
+
+---
+
+## Accessibility Guidelines
+
+### Minimum Requirements
+
+1. **Semantic HTML**: Use proper heading hierarchy, nav elements, section tags
+2. **Keyboard Navigation**: All interactive elements accessible via keyboard
+3. **Focus States**: Visible focus indicators on all interactive elements
+4. **Alt Text**: All images and icons have descriptive alt text
+5. **Color Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text
+
+### Tables
+
+- Use `<thead>`, `<tbody>`, `<th>`, `<td>` properly
+- Include `scope` attribute on header cells
+- Provide `aria-label` for complex tables
+
+---
+
+## Notes
+
+- These patterns emerged from the Q.CELLS New Homes Admin Portal development
+- They complement the existing Qcells Design Language Standards
+- All patterns prioritize user efficiency and clarity
+- Adapt patterns to specific use cases while maintaining core principles

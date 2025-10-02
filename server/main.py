@@ -259,6 +259,54 @@ def sf_test():
     return sf_query(QueryRequest(soql=DEFAULT_TEST_SOQL))
 
 
+@app.get("/api/sf/builders")
+def get_builders():
+    """Get National Builders with extracted City and State from compound address"""
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    # Connect to Salesforce
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+
+    # Query National Builders
+    soql = """
+    SELECT 
+        Name, 
+        Headquarters_Address__c,
+        Website__c
+    FROM National_Builder__c
+    """
+    
+    result = sf.query_all(soql)
+    
+    # Process records to extract City and State from compound address
+    builders = []
+    for record in result.get('records', []):
+        hq_address = record.get('Headquarters_Address__c', {})
+        
+        builder = {
+            "Name": record.get('Name', ''),
+            "City": hq_address.get('city', '') if isinstance(hq_address, dict) else '',
+            "State": hq_address.get('state', '') if isinstance(hq_address, dict) else '',
+            "Website": record.get('Website__c', '')
+        }
+        builders.append(builder)
+    
+    return {
+        "builders": builders,
+        "totalSize": len(builders)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 
