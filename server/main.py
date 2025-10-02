@@ -49,21 +49,21 @@ async def validate_configuration():
     logger = logging.getLogger("uvicorn")
     
     warnings = []
-    errors = []
+    sf_warnings = []
     
-    # Check Salesforce configuration
+    # Check Salesforce configuration (non-blocking)
     if not CLIENT_ID:
-        errors.append("SALESFORCE_CLIENT_ID is not set")
+        sf_warnings.append("SALESFORCE_CLIENT_ID is not set")
     if not USERNAME:
-        errors.append("SALESFORCE_USERNAME is not set")
+        sf_warnings.append("SALESFORCE_USERNAME is not set")
     if not PRIVATE_KEY_CONTENT and not KEY_PATH:
-        errors.append("Either SALESFORCE_PRIVATE_KEY or SALESFORCE_JWT_KEY_PATH must be set")
+        sf_warnings.append("Either SALESFORCE_PRIVATE_KEY or SALESFORCE_JWT_KEY_PATH must be set")
     
     # Check if using file path but file doesn't exist
     if KEY_PATH and not PRIVATE_KEY_CONTENT:
         key_file = Path(KEY_PATH)
         if not key_file.exists():
-            errors.append(f"SALESFORCE_JWT_KEY_PATH points to non-existent file: {KEY_PATH}")
+            sf_warnings.append(f"SALESFORCE_JWT_KEY_PATH points to non-existent file: {KEY_PATH}")
     
     # Warnings for development settings in production
     if ENVIRONMENT == "production":
@@ -72,17 +72,20 @@ async def validate_configuration():
         if allow_all:
             warnings.append("CORS_ORIGINS is set to '*' (allow all) in production - security risk!")
     
-    # Log warnings
+    # Log all warnings
     for warning in warnings:
         logger.warning(f"⚠️  {warning}")
     
-    # Log errors and raise if critical
-    if errors:
-        for error in errors:
-            logger.error(f"❌ {error}")
-        raise RuntimeError(f"Configuration errors: {', '.join(errors)}")
+    # Salesforce config warnings (don't crash - API endpoints will fail gracefully)
+    if sf_warnings:
+        logger.warning("⚠️  Salesforce configuration incomplete - API endpoints will fail:")
+        for sf_warning in sf_warnings:
+            logger.warning(f"   - {sf_warning}")
+        logger.warning("   Configure these variables in Railway to enable Salesforce integration")
+    else:
+        logger.info("✅ Salesforce configuration validated successfully")
     
-    logger.info("✅ Configuration validated successfully")
+    logger.info("✅ Application startup complete")
 
 # CORS
 raw_origins = os.getenv("CORS_ORIGINS", "*").split(",")
