@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solar Support Suite</title>
+    <!-- Pretendard (open-source) font -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img src="/assets/qcells-new-homes-navy-logo-scaled-1-2048x346.webp" alt="New Homes Logo" class="logo" />
+        </div>
+        <nav class="nav">
+          <a class="nav-item active" data-section="homes"><span class="icon">🏠</span><span>Homes</span></a>
+          <a class="nav-item" data-section="pricing"><span class="icon">💲</span><span>Pricing</span></a>
+          <a class="nav-item" data-section="marketing"><span class="icon">🗂️</span><span>Marketing</span></a>
+          <a class="nav-item" data-section="training"><span class="icon">🎓</span><span>Training</span></a>
+          <a class="nav-item" data-section="support"><span class="icon">📞</span><span>Support</span></a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <header class="gnb">
+          <h1 class="title">Solar Support Suite</h1>
+        </header>
+
+        <section id="section-homes" class="section visible">
+          <h2>Homes</h2>
+          <div class="card">
+            <h3>Salesforce Quick Test</h3>
+            <div class="row">
+              <input id="soql" class="input" value="SELECT Id, Name FROM Account LIMIT 5" />
+              <button id="runQuery" class="btn primary">Run Query</button>
+            </div>
+            <pre id="output" class="output">Click Run Query to call /api/sf/query</pre>
+          </div>
+        </section>
+
+        <section id="section-pricing" class="section"><h2>Pricing</h2></section>
+        <section id="section-marketing" class="section"><h2>Marketing</h2></section>
+        <section id="section-training" class="section"><h2>Training</h2></section>
+        <section id="section-support" class="section"><h2>Support</h2></section>
+      </main>
+    </div>
+
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>
