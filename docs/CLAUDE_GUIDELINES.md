@@ -12,6 +12,8 @@ This project follows a clean, organized structure. **ALWAYS maintain this organi
 ├── package.json           # Node.js dependencies (Playwright E2E tests)
 ├── .env.example           # Environment variable template
 ├── .gitignore            # Git ignore rules
+├── railway.toml           # Railway deployment config (MUST be in root)
+├── nixpacks.toml          # Nixpacks build config (MUST be in root)
 ├── server/               # Backend Python/FastAPI code
 ├── web/                  # Frontend HTML/CSS/JavaScript
 ├── assets/               # Static assets (images, fonts, etc.)
@@ -22,20 +24,21 @@ This project follows a clean, organized structure. **ALWAYS maintain this organi
 
 **IMPORTANT:** Never create files in the root directory except for the files listed above. Use the appropriate subdirectory.
 
+**EXCEPTION:** `railway.toml` and `nixpacks.toml` MUST remain in root - Railway platform requires them there.
+
 ### `/config` - Configuration Files
 
-**Purpose:** All configuration files for build, deploy, and test tools.
+**Purpose:** Configuration files for test tools and other utilities.
 
 **Allowed files:**
-- `railway.toml` - Railway deployment configuration
-- `nixpacks.toml` - Build system configuration
 - `playwright.config.js` - Playwright E2E test configuration
 - `pytest.ini` - Pytest unit test configuration
+- Other tool configs (eslint, prettier, etc.)
 
 **Rules:**
-- All tool config files belong here
+- Test config files belong here
 - If adding a new tool (linter, formatter, etc.), put its config here
-- Never create config files in root directory
+- **EXCEPTION:** `railway.toml` and `nixpacks.toml` MUST stay in root (Railway requirement)
 
 ### `/docs` - Documentation
 
