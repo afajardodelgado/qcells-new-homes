@@ -35,10 +35,54 @@ LOGIN_URL = os.getenv("SALESFORCE_LOGIN_URL", "https://test.salesforce.com").str
 CLIENT_ID = (os.getenv("SALESFORCE_CLIENT_ID") or "").strip()
 USERNAME = (os.getenv("SALESFORCE_USERNAME") or "").strip()
 KEY_PATH = os.getenv("SALESFORCE_JWT_KEY_PATH", "").strip()
+PRIVATE_KEY_CONTENT = os.getenv("SALESFORCE_PRIVATE_KEY", "").strip()  # Direct key content
 DEFAULT_TEST_SOQL = os.getenv("DEFAULT_TEST_SOQL", "SELECT Id, Name FROM Account LIMIT 5").strip()
 
 # FastAPI app
 app = FastAPI(title="SF JWT Proxy")
+
+# Startup validation
+@app.on_event("startup")
+async def validate_configuration():
+    """Validate configuration on startup to fail fast if misconfigured"""
+    import logging
+    logger = logging.getLogger("uvicorn")
+    
+    warnings = []
+    errors = []
+    
+    # Check Salesforce configuration
+    if not CLIENT_ID:
+        errors.append("SALESFORCE_CLIENT_ID is not set")
+    if not USERNAME:
+        errors.append("SALESFORCE_USERNAME is not set")
+    if not PRIVATE_KEY_CONTENT and not KEY_PATH:
+        errors.append("Either SALESFORCE_PRIVATE_KEY or SALESFORCE_JWT_KEY_PATH must be set")
+    
+    # Check if using file path but file doesn't exist
+    if KEY_PATH and not PRIVATE_KEY_CONTENT:
+        key_file = Path(KEY_PATH)
+        if not key_file.exists():
+            errors.append(f"SALESFORCE_JWT_KEY_PATH points to non-existent file: {KEY_PATH}")
+    
+    # Warnings for development settings in production
+    if ENVIRONMENT == "production":
+        if LOGIN_URL == "https://test.salesforce.com":
+            warnings.append("Using sandbox LOGIN_URL in production environment")
+        if allow_all:
+            warnings.append("CORS_ORIGINS is set to '*' (allow all) in production - security risk!")
+    
+    # Log warnings
+    for warning in warnings:
+        logger.warning(f"⚠️  {warning}")
+    
+    # Log errors and raise if critical
+    if errors:
+        for error in errors:
+            logger.error(f"❌ {error}")
+        raise RuntimeError(f"Configuration errors: {', '.join(errors)}")
+    
+    logger.info("✅ Configuration validated successfully")
 
 # CORS
 raw_origins = os.getenv("CORS_ORIGINS", "*").split(",")
@@ -78,20 +122,27 @@ class QueryRequest(BaseModel):
     tooling: Optional[bool] = False
 
 
-def mint_access_token(login_url: str, client_id: str, username: str, key_path: str) -> dict:
+def mint_access_token(login_url: str, client_id: str, username: str, key_path: str, key_content: str = "") -> dict:
     if not login_url.startswith("https://test.salesforce.com") and not login_url.startswith("https://login.salesforce.com"):
         raise HTTPException(status_code=400, detail="LOGIN_URL must be https://test.salesforce.com (sandbox) or https://login.salesforce.com (prod)")
     if not client_id:
         raise HTTPException(status_code=400, detail="SALESFORCE_CLIENT_ID is empty")
     if not username:
         raise HTTPException(status_code=400, detail="SALESFORCE_USERNAME is empty")
-    if not key_path:
-        raise HTTPException(status_code=400, detail="SALESFORCE_JWT_KEY_PATH is empty")
-
-    key_file = Path(key_path)
-    if not key_file.exists():
-        raise HTTPException(status_code=500, detail=f"Private key not found at: {key_file}")
-    private_key = key_file.read_text()
+    
+    # Support both file-based and environment variable key sources
+    private_key = ""
+    if key_content:
+        # Use key from environment variable (Railway deployment)
+        private_key = key_content
+    elif key_path:
+        # Use key from file (local development)
+        key_file = Path(key_path)
+        if not key_file.exists():
+            raise HTTPException(status_code=500, detail=f"Private key not found at: {key_file}")
+        private_key = key_file.read_text()
+    else:
+        raise HTTPException(status_code=400, detail="Either SALESFORCE_JWT_KEY_PATH or SALESFORCE_PRIVATE_KEY must be set")
 
     now = int(time.time())
     payload = {
@@ -175,7 +226,7 @@ def log_frontend_error(error: ErrorLog):
 @app.post("/api/sf/query")
 def sf_query(req: QueryRequest):
     try:
-        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH)
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
     except HTTPException:
         raise
     except Exception as e:
