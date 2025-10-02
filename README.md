@@ -226,7 +226,7 @@ The server automatically:
 
 ## 🎨 Design System
 
-This application follows the **Q.CELLS Design Language Standards**. See `qcells-design-standards.md` for complete specifications.
+This application follows the **Q.CELLS Design Language Standards**. See `docs/DESIGN_STANDARDS.md` for complete specifications.
 
 **Key Standards:**
 - Desktop min: 1384px × 768px
@@ -294,7 +294,7 @@ For Q.CELLS New Homes internal support, contact the development team.
 
 ## 🚀 Deployment
 
-See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for detailed Railway deployment instructions.
+See [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed Railway deployment instructions.
 
 **Quick Deploy to Railway:**
 1. Push code to GitHub

@@ -1,10 +1,133 @@
 # Claude Development Guidelines - Q.CELLS New Homes Solar Support Suite
 
+## Project Structure
+
+This project follows a clean, organized structure. **ALWAYS maintain this organization when adding new files.**
+
+### Root Directory (Core Files Only)
+```
+/
+├── README.md               # Main project documentation
+├── requirements.txt        # Python dependencies
+├── package.json           # Node.js dependencies (Playwright E2E tests)
+├── .env.example           # Environment variable template
+├── .gitignore            # Git ignore rules
+├── server/               # Backend Python/FastAPI code
+├── web/                  # Frontend HTML/CSS/JavaScript
+├── assets/               # Static assets (images, fonts, etc.)
+├── tests/                # All test files (unit & E2E)
+├── config/               # Configuration files (see below)
+└── docs/                 # All documentation (see below)
+```
+
+**IMPORTANT:** Never create files in the root directory except for the files listed above. Use the appropriate subdirectory.
+
+### `/config` - Configuration Files
+
+**Purpose:** All configuration files for build, deploy, and test tools.
+
+**Allowed files:**
+- `railway.toml` - Railway deployment configuration
+- `nixpacks.toml` - Build system configuration
+- `playwright.config.js` - Playwright E2E test configuration
+- `pytest.ini` - Pytest unit test configuration
+
+**Rules:**
+- All tool config files belong here
+- If adding a new tool (linter, formatter, etc.), put its config here
+- Never create config files in root directory
+
+### `/docs` - Documentation
+
+**Purpose:** All documentation files for developers, deployment, design standards, and guidelines.
+
+**Allowed files:**
+- `CLAUDE_GUIDELINES.md` - This file (LLM development guidelines)
+- `DESIGN_STANDARDS.md` - Q.CELLS design language standards
+- `DEPLOYMENT.md` - Railway deployment guide
+- Any new documentation files (use UPPERCASE names with .md extension)
+
+**Rules:**
+- All `.md` files except README.md belong here
+- Use descriptive UPPERCASE names (e.g., `API_REFERENCE.md`, `CONTRIBUTING.md`)
+- Never create documentation files in root directory
+
+### `/server` - Backend Code
+
+**Purpose:** Python/FastAPI backend application code.
+
+**Structure:**
+```
+server/
+├── __init__.py
+└── main.py              # Main FastAPI application
+```
+
+**Rules:**
+- All Python backend code belongs here
+- Keep modular - split into multiple files as needed (e.g., `routes.py`, `models.py`, `utils.py`)
+- No test files here (tests go in `/tests`)
+
+### `/web` - Frontend Code
+
+**Purpose:** Frontend HTML, CSS, and JavaScript files.
+
+**Structure:**
+```
+web/
+├── index.html           # Main HTML file
+├── styles.css           # Stylesheet
+└── app.js               # JavaScript application logic
+```
+
+**Rules:**
+- All frontend code belongs here
+- Split CSS/JS into multiple files as needed
+- No emojis in any UI-facing code
+- Follow Q.CELLS design standards (see `docs/DESIGN_STANDARDS.md`)
+
+### `/assets` - Static Assets
+
+**Purpose:** Images, fonts, logos, and other static files served by the application.
+
+**Structure:**
+```
+assets/
+├── qcells-new-homes-navy-logo-scaled-1-2048x346.webp
+└── [other images, icons, fonts, etc.]
+```
+
+**Rules:**
+- Only static files (images, fonts, PDFs, etc.)
+- No code files
+- Optimize images before adding
+
+### `/tests` - Test Files
+
+**Purpose:** All test files (unit tests, E2E tests, integration tests).
+
+**Structure:**
+```
+tests/
+├── __init__.py
+├── test_api.py          # Pytest unit tests
+└── e2e/
+    └── navigation.spec.js  # Playwright E2E tests
+```
+
+**Rules:**
+- All test files belong here
+- Unit tests: `test_*.py` in root of `/tests`
+- E2E tests: `*.spec.js` in `/tests/e2e/`
+- No production code in this directory
+
+---
+
 ## Design Standards Reference
 
 **IMPORTANT**: For ALL design-related work, refer to the **Q.CELLS Design Language Standards** documented in:
 
-📄 **`qcells-design-standards.md`**
+📄 **`docs/DESIGN_STANDARDS.md`**
 
 This file contains comprehensive specifications for:
 - Grid and Layout (Desktop & Mobile)
@@ -278,19 +401,52 @@ git push origin --delete feature-name
 
 ---
 
+## File Organization Rules
+
+### When Creating New Files:
+
+1. **Backend code?** → Add to `/server/`
+2. **Frontend code?** → Add to `/web/`
+3. **Images/assets?** → Add to `/assets/`
+4. **Tests?** → Add to `/tests/` (unit) or `/tests/e2e/` (E2E)
+5. **Config files?** → Add to `/config/`
+6. **Documentation?** → Add to `/docs/` with UPPERCASE name
+
+### What NOT to Do:
+
+❌ Never create `.md` files in root (except README.md)
+❌ Never create config files in root
+❌ Never mix test files with production code
+❌ Never create random files in root directory
+
+### Quick Reference:
+
+| File Type | Location | Example |
+|-----------|----------|---------|
+| Python backend | `/server/` | `server/routes.py` |
+| HTML/CSS/JS | `/web/` | `web/components.js` |
+| Images/logos | `/assets/` | `assets/icon.svg` |
+| Unit tests | `/tests/` | `tests/test_routes.py` |
+| E2E tests | `/tests/e2e/` | `tests/e2e/login.spec.js` |
+| Config files | `/config/` | `config/eslint.config.js` |
+| Documentation | `/docs/` | `docs/API_REFERENCE.md` |
+
+---
+
 ## Summary for LLMs
 
 **When working on this project:**
 
-1. 🚫 **NO EMOJIS IN UI/UX CODE** → Delete any emojis from user-facing code immediately
-2. 📐 **Design changes?** → Check `qcells-design-standards.md` first
-3. 🔧 **Code changes?** → Complete pre-push checklist
-4. 🛑 **Wait for user signal** → Only run git commands when user says "OK let's merge" or similar
-5. 🐌 **Execute git commands ONE AT A TIME** → Never batch git commands
-6. 🚂 **Deployment?** → Ensure Railway compatibility
-7. 🚫 **Never create Pull Requests** → Branch → Merge to main → Delete branches
-8. ✅ **Always verify locally before pushing**
-9. 🧹 **Keep it clean** → Always delete branches after merging
+1. 📁 **File organization** → Always use correct directory structure (see above)
+2. 🚫 **NO EMOJIS IN UI/UX CODE** → Delete any emojis from user-facing code immediately
+3. 📐 **Design changes?** → Check `docs/DESIGN_STANDARDS.md` first
+4. 🔧 **Code changes?** → Complete pre-push checklist
+5. 🛑 **Wait for user signal** → Only run git commands when user says "OK let's merge" or similar
+6. 🐌 **Execute git commands ONE AT A TIME** → Never batch git commands
+7. 🚂 **Deployment?** → Ensure Railway compatibility
+8. 🚫 **Never create Pull Requests** → Branch → Merge to main → Delete branches
+9. ✅ **Always verify locally before pushing**
+10. 🧹 **Keep it clean** → Always delete branches after merging
 
 ---
 
