@@ -534,6 +534,362 @@ window.sortCommunities = sortCommunities;
 loadCommunitiesBtn?.addEventListener('click', loadCommunities);
 communitySearchInput?.addEventListener('input', filterCommunities);
 
+// Homes functionality
+const loadHomesBtn = document.getElementById('loadHomes');
+const homesTableDiv = document.getElementById('homesTable');
+const homeSearchInput = document.getElementById('homeSearch');
+const homeDetailsPanel = document.getElementById('homeDetailsPanel');
+const homeDetailsContent = document.getElementById('homeDetailsContent');
+const homesLayout = document.getElementById('homesLayout');
+
+let allHomes = [];
+let selectedHomeId = null;
+let homesSortColumn = null;
+let homesSortDirection = 'asc';
+
+function renderHomes(homes) {
+  if (!homes || homes.length === 0) {
+    homesTableDiv.innerHTML = '<p>No homes found.</p>';
+    return;
+  }
+  
+  const getSortIcon = (column) => {
+    if (homesSortColumn !== column) return '';
+    return homesSortDirection === 'asc' ? ' ▲' : ' ▼';
+  };
+  
+  // Build table with sortable headers - Main table columns only
+  let tableHTML = `
+    <div style="flex: 1; overflow-y: auto; min-height: 0;">
+      <table class="builders-table">
+        <thead>
+          <tr>
+            <th onclick="sortHomes('New_Home_Project_Name')" style="cursor: pointer;">Project Name${getSortIcon('New_Home_Project_Name')}</th>
+            <th onclick="sortHomes('Project_Stage')" style="cursor: pointer;">Stage${getSortIcon('Project_Stage')}</th>
+            <th onclick="sortHomes('Community_Name')" style="cursor: pointer;">Community${getSortIcon('Community_Name')}</th>
+            <th onclick="sortHomes('Builder_Name')" style="cursor: pointer;">Builder${getSortIcon('Builder_Name')}</th>
+            <th onclick="sortHomes('City')" style="cursor: pointer;">City${getSortIcon('City')}</th>
+            <th onclick="sortHomes('State')" style="cursor: pointer;">State${getSortIcon('State')}</th>
+            <th onclick="sortHomes('Street_Address')" style="cursor: pointer;">Address${getSortIcon('Street_Address')}</th>
+            <th onclick="sortHomes('Installer_Name')" style="cursor: pointer;">Installer${getSortIcon('Installer_Name')}</th>
+            <th onclick="sortHomes('Partner_Name')" style="cursor: pointer;">Partner${getSortIcon('Partner_Name')}</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  homes.forEach(home => {
+    const selectedClass = home.New_Home_Project_Id === selectedHomeId ? 'selected' : '';
+    
+    tableHTML += `
+      <tr class="${selectedClass}" onclick="selectHome('${home.New_Home_Project_Id}')">
+        <td>${home.New_Home_Project_Name || '—'}</td>
+        <td>${home.Project_Stage || '—'}</td>
+        <td>${home.Community_Name || '—'}</td>
+        <td>${home.Builder_Name || '—'}</td>
+        <td>${home.City || '—'}</td>
+        <td>${home.State || '—'}</td>
+        <td>${home.Street_Address || '—'}</td>
+        <td>${home.Installer_Name || '—'}</td>
+        <td>${home.Partner_Name || '—'}</td>
+      </tr>
+    `;
+  });
+  
+  tableHTML += `
+        </tbody>
+      </table>
+    </div>
+    <p class="table-footer">Showing ${homes.length} of ${allHomes.length} homes</p>
+  `;
+  
+  homesTableDiv.innerHTML = tableHTML;
+}
+
+async function loadHomes() {
+  homesTableDiv.innerHTML = '<p>Loading homes...</p>';
+  try {
+    const res = await fetch('/api/sf/homes');
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+    
+    allHomes = data.homes || [];
+    renderHomes(allHomes);
+  } catch (err) {
+    homesTableDiv.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+  }
+}
+
+function filterHomes() {
+  const searchTerm = homeSearchInput.value.toLowerCase().trim();
+  
+  let filtered;
+  if (!searchTerm) {
+    filtered = [...allHomes];
+  } else {
+    filtered = allHomes.filter(home => {
+      const projectName = (home.New_Home_Project_Name || '').toLowerCase();
+      const stage = (home.Project_Stage || '').toLowerCase();
+      const community = (home.Community_Name || '').toLowerCase();
+      const builder = (home.Builder_Name || '').toLowerCase();
+      const city = (home.City || '').toLowerCase();
+      const state = (home.State || '').toLowerCase();
+      const address = (home.Street_Address || '').toLowerCase();
+      const installer = (home.Installer_Name || '').toLowerCase();
+      const partner = (home.Partner_Name || '').toLowerCase();
+      
+      return projectName.includes(searchTerm) ||
+             stage.includes(searchTerm) ||
+             community.includes(searchTerm) ||
+             builder.includes(searchTerm) ||
+             city.includes(searchTerm) ||
+             state.includes(searchTerm) ||
+             address.includes(searchTerm) ||
+             installer.includes(searchTerm) ||
+             partner.includes(searchTerm);
+    });
+  }
+  
+  // Apply current sort if active
+  if (homesSortColumn) {
+    filtered.sort((a, b) => {
+      const aVal = (a[homesSortColumn] || '').toString().toLowerCase();
+      const bVal = (b[homesSortColumn] || '').toString().toLowerCase();
+      
+      if (aVal < bVal) return homesSortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return homesSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+  
+  renderHomes(filtered);
+}
+
+function sortHomes(column) {
+  // Toggle direction if same column, otherwise default to ascending
+  if (homesSortColumn === column) {
+    homesSortDirection = homesSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    homesSortColumn = column;
+    homesSortDirection = 'asc';
+  }
+  
+  // Get current filtered data
+  const searchTerm = homeSearchInput.value.toLowerCase().trim();
+  let dataToSort = searchTerm ? 
+    allHomes.filter(home => {
+      const projectName = (home.New_Home_Project_Name || '').toLowerCase();
+      const stage = (home.Project_Stage || '').toLowerCase();
+      const community = (home.Community_Name || '').toLowerCase();
+      const builder = (home.Builder_Name || '').toLowerCase();
+      const city = (home.City || '').toLowerCase();
+      const state = (home.State || '').toLowerCase();
+      const address = (home.Street_Address || '').toLowerCase();
+      const installer = (home.Installer_Name || '').toLowerCase();
+      const partner = (home.Partner_Name || '').toLowerCase();
+      
+      return projectName.includes(searchTerm) ||
+             stage.includes(searchTerm) ||
+             community.includes(searchTerm) ||
+             builder.includes(searchTerm) ||
+             city.includes(searchTerm) ||
+             state.includes(searchTerm) ||
+             address.includes(searchTerm) ||
+             installer.includes(searchTerm) ||
+             partner.includes(searchTerm);
+    }) : [...allHomes];
+  
+  // Sort
+  dataToSort.sort((a, b) => {
+    const aVal = (a[column] || '').toString().toLowerCase();
+    const bVal = (b[column] || '').toString().toLowerCase();
+    
+    if (aVal < bVal) return homesSortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return homesSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  renderHomes(dataToSort);
+}
+
+function closeHomeDetails() {
+  selectedHomeId = null;
+  homesLayout.classList.remove('split-view');
+  
+  // Re-render to remove selected state
+  if (homesSortColumn) {
+    sortHomes(homesSortColumn);
+  } else {
+    const searchTerm = homeSearchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      filterHomes();
+    } else {
+      renderHomes(allHomes);
+    }
+  }
+}
+
+async function selectHome(homeId) {
+  selectedHomeId = homeId;
+  
+  // Show split view
+  homesLayout.classList.add('split-view');
+  
+  // Re-render to show selected state
+  if (homesSortColumn) {
+    sortHomes(homesSortColumn);
+  } else {
+    const searchTerm = homeSearchInput.value.toLowerCase().trim();
+    if (searchTerm) {
+      filterHomes();
+    } else {
+      renderHomes(allHomes);
+    }
+  }
+  
+  // Find the home data
+  const home = allHomes.find(h => h.New_Home_Project_Id === homeId);
+  
+  if (!home) {
+    homeDetailsContent.innerHTML = '<p>Home data not found.</p>';
+    return;
+  }
+  
+  // Render detail panels
+  homeDetailsContent.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="margin: 0;">Project Details</h3>
+      <button onclick="closeHomeDetails()" class="btn" style="padding: 4px 12px; font-size: 12px;">✕ Close</button>
+    </div>
+    
+    <!-- Homebuyer Information Section -->
+    <div class="info-section">
+      <div class="info-section-title">Homebuyer Information</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Estimated COE Date</span>
+          <span class="info-value">${home.Estimated_COE_Date || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Customer Notes</span>
+          <span class="info-value">${home.Customer_Notes || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Actual COE Date</span>
+          <span class="info-value">${home.Actual_COE_Date || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">New Home Welcome Email Sent</span>
+          <span class="info-value">${home.Welcome_Email_Sent === true ? '☑' : '☐'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Primary Contact Name</span>
+          <span class="info-value">${home.Primary_Contact_Name || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Permission to Operate Email Sent</span>
+          <span class="info-value">${home.PTO_Email_Sent === true ? '☑' : '☐'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Primary Phone Number</span>
+          <span class="info-value">${home.Primary_Phone_Number || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Email</span>
+          <span class="info-value">${home.Email || '—'}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Plan Type & Equipment Section -->
+    <div class="info-section" style="margin-top: 24px;">
+      <div class="info-section-title">Plan Type & Equipment</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Elevation</span>
+          <span class="info-value">${home.Plan_Type_Name || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Home Sq. Ft.</span>
+          <span class="info-value">${home.Building_Number || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Swing</span>
+          <span class="info-value">${home.Phase || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Service Voltage</span>
+          <span class="info-value">${home.Service_Voltage || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">System Size (kW)</span>
+          <span class="info-value">${home.Primary_PV_Prod_Name || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label"># of Stories</span>
+          <span class="info-value">—</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Module Quantity</span>
+          <span class="info-value">—</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Roofing Type</span>
+          <span class="info-value">—</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Module Type</span>
+          <span class="info-value">${home.Installer_Partner_PV || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Battery Size (kWh)</span>
+          <span class="info-value">${home.Installer_Partner_Battery || '—'}</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Inverter Quantity</span>
+          <span class="info-value">—</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Number of Batteries</span>
+          <span class="info-value">—</span>
+        </div>
+        
+        <div class="info-item">
+          <span class="info-label">Inverter Type</span>
+          <span class="info-value">${home.Electrical_Name || '—'}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Make functions globally available
+window.sortHomes = sortHomes;
+window.selectHome = selectHome;
+window.closeHomeDetails = closeHomeDetails;
+
+loadHomesBtn?.addEventListener('click', loadHomes);
+homeSearchInput?.addEventListener('input', filterHomes);
+
 // Navigation
 const navItems = document.querySelectorAll('.nav-item');
 const sections = {
@@ -561,6 +917,8 @@ navItems.forEach(item => {
       loadBuilders();
     } else if (target === 'communities') {
       loadCommunities();
+    } else if (target === 'new-homes') {
+      loadHomes();
     }
   });
 });

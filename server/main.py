@@ -453,6 +453,137 @@ def get_divisions(builder_id: str):
     }
 
 
+@app.get("/api/sf/homes")
+def get_homes():
+    """
+    Fetch all New Home Projects with related lookups
+    """
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    # Connect to Salesforce
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+    
+    soql = """
+    SELECT
+        Id,
+        Name,
+        Project_Stage__c,
+        New_Home_Community_Name__r.Name,
+        National_Builder_Account__r.Name,
+        Builder_Division__c,
+        Account__r.Name,
+        Authority_Having_Jurisdiction__r.Name,
+        Utility__r.Name,
+        Service_Voltage__c,
+        Street_Address__c,
+        Street_Address_2__c,
+        City__c,
+        State__c,
+        Zip_Code__c,
+        Country__c,
+        Phase__c,
+        Building__c,
+        Lot__c,
+        APN_Number__c,
+        County__c,
+        Application_ID__c,
+        Embedded_URL__c,
+        New_Home_Installer__r.Name,
+        New_Home_Partner__r.Name,
+        Primary_PV_Prod__r.Name,
+        Electrical__r.Name,
+        Plan_Type__r.Name,
+        Finance_Type__c,
+        Installer_Partner_PV__c,
+        Installer_Partner_Battery__c,
+        Model_Home__c,
+        Legal_Owner__c,
+        New_Home_Build__c,
+        Non_Solar_Home__c,
+        Estimated_COE_Date__c,
+        Actual_COE_Date__c,
+        Primary_Contact_Name__c,
+        Primary_Phone_Number__c,
+        Email__c,
+        Customer_Notes__c,
+        New_Home_Welcome_Email_Sent__c,
+        Permission_to_Operate_Email_Sent__c
+    FROM New_Home_Project__c
+    """
+    
+    result = sf.query_all(soql)
+    records = result.get('records', [])
+    
+    # Process homes
+    homes = []
+    for record in records:
+        # Helper to get lookup field
+        def get_lookup(obj, field):
+            return obj.get(field, '') if isinstance(obj, dict) else ''
+        
+        home = {
+            "New_Home_Project_Id": record.get('Id', ''),
+            "New_Home_Project_Name": record.get('Name', ''),
+            "Project_Stage": record.get('Project_Stage__c', ''),
+            "Community_Name": get_lookup(record.get('New_Home_Community_Name__r'), 'Name'),
+            "Builder_Name": get_lookup(record.get('National_Builder_Account__r'), 'Name'),
+            "Builder_Division": record.get('Builder_Division__c', ''),
+            "Account_Name": get_lookup(record.get('Account__r'), 'Name'),
+            "AHJ_Name": get_lookup(record.get('Authority_Having_Jurisdiction__r'), 'Name'),
+            "Utility_Name": get_lookup(record.get('Utility__r'), 'Name'),
+            "Service_Voltage": record.get('Service_Voltage__c', ''),
+            "Street_Address": record.get('Street_Address__c', ''),
+            "Street_Address_2": record.get('Street_Address_2__c', ''),
+            "City": record.get('City__c', ''),
+            "State": record.get('State__c', ''),
+            "Zip": record.get('Zip_Code__c', ''),
+            "Country": record.get('Country__c', ''),
+            "Phase": record.get('Phase__c', ''),
+            "Building_Number": record.get('Building__c', ''),
+            "Lot_Number": record.get('Lot__c', ''),
+            "APN_Number": record.get('APN_Number__c', ''),
+            "County": record.get('County__c', ''),
+            "Application_ID": record.get('Application_ID__c', ''),
+            "Embedded_URL": record.get('Embedded_URL__c', ''),
+            "Installer_Name": get_lookup(record.get('New_Home_Installer__r'), 'Name'),
+            "Partner_Name": get_lookup(record.get('New_Home_Partner__r'), 'Name'),
+            "Primary_PV_Prod_Name": get_lookup(record.get('Primary_PV_Prod__r'), 'Name'),
+            "Electrical_Name": get_lookup(record.get('Electrical__r'), 'Name'),
+            "Plan_Type_Name": get_lookup(record.get('Plan_Type__r'), 'Name'),
+            "Finance_Type": record.get('Finance_Type__c', ''),
+            "Installer_Partner_PV": record.get('Installer_Partner_PV__c', ''),
+            "Installer_Partner_Battery": record.get('Installer_Partner_Battery__c', ''),
+            "Model_Home": record.get('Model_Home__c', ''),
+            "Legal_Owner": record.get('Legal_Owner__c', ''),
+            "New_Home_Build": record.get('New_Home_Build__c', ''),
+            "Non_Solar_Home": record.get('Non_Solar_Home__c', ''),
+            "Estimated_COE_Date": record.get('Estimated_COE_Date__c', ''),
+            "Actual_COE_Date": record.get('Actual_COE_Date__c', ''),
+            "Primary_Contact_Name": record.get('Primary_Contact_Name__c', ''),
+            "Primary_Phone_Number": record.get('Primary_Phone_Number__c', ''),
+            "Email": record.get('Email__c', ''),
+            "Customer_Notes": record.get('Customer_Notes__c', ''),
+            "Welcome_Email_Sent": record.get('New_Home_Welcome_Email_Sent__c', False),
+            "PTO_Email_Sent": record.get('Permission_to_Operate_Email_Sent__c', False),
+        }
+        homes.append(home)
+    
+    return {
+        "homes": homes,
+        "totalSize": len(homes)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

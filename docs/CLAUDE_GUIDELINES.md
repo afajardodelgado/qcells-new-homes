@@ -420,6 +420,94 @@ git branch -d feature-name
 
 ---
 
+## Code Pattern Consistency
+
+**CRITICAL: Always examine existing code patterns before implementing new features.**
+
+When the user provides code examples or requests new functionality:
+
+### ❌ DON'T:
+- Implement provided code verbatim without examining the codebase
+- Introduce new dependencies without checking if existing patterns solve the problem
+- Assume the user's code example is the best approach for this codebase
+
+### ✅ DO:
+1. **Search for similar implementations** in the codebase first
+2. **Identify existing patterns** (e.g., how other endpoints are structured)
+3. **Follow established conventions** (e.g., direct SOQL queries vs. pandas DataFrames)
+4. **Question unnecessary dependencies** - If Builders and Communities work without pandas, why would Homes need it?
+5. **Adapt the user's request** to match the codebase's established patterns
+
+### Example:
+**User Request**: "Add Homes endpoint using this pandas code..."
+
+**Wrong Approach**: Copy-paste the pandas code → Add pandas dependency → Create inconsistent endpoint
+
+**Right Approach**:
+1. Check how `/api/sf/builders` and `/api/sf/communities` work
+2. Notice they use direct SOQL + simple record processing
+3. Adapt the user's data requirements to match the existing pattern
+4. Result: Consistent, dependency-free implementation
+
+**Remember**: User-provided code examples show *what data they want*, not necessarily *how to implement it* in this specific codebase.
+
+---
+
+## Common Pitfalls & Debugging
+
+### API Endpoint Pattern Consistency
+
+**Issue**: "Unexpected token 'I', 'Internal S'... is not valid JSON" error
+
+**Root Cause**: When a backend endpoint has a Python error (like calling an undefined function), it returns an HTML error page or plain text error message instead of JSON. The frontend tries to parse this as JSON and fails.
+
+**Example Problem** (October 6, 2025):
+```python
+@app.get("/api/sf/homes")
+def get_homes():
+    sf = get_salesforce()  # ❌ Undefined function - causes 500 error
+    # ... rest of endpoint
+```
+
+**Symptoms**:
+- Frontend shows: `Error: Unexpected token 'I', "Internal S"... is not valid JSON`
+- Backend returns plain text error instead of JSON
+- Browser console shows the error when calling the API endpoint
+
+**Solution**: Follow the established authentication pattern used in ALL other endpoints:
+```python
+@app.get("/api/sf/homes")
+def get_homes():
+    # ✅ Standard pattern from /api/sf/builders, /api/sf/communities, etc.
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+    # ... rest of endpoint
+```
+
+**Lesson**: When adding new API endpoints:
+1. **Copy from existing endpoints** - Don't invent new patterns
+2. **Check for undefined functions** - If calling a helper function, make sure it exists
+3. **Test the endpoint** - Always test API endpoints in browser/Postman before considering it complete
+4. **Follow the pattern** - All `/api/sf/*` endpoints use the same auth flow
+
+**Debugging Strategy**:
+- JSON parse errors in frontend → Check backend response (could be HTML error page)
+- "Internal Server Error" → Check backend logs for Python exceptions
+- Undefined function errors → Search codebase to verify function exists before calling it
+
+---
+
 ## Summary for LLMs
 
 **When working on this project:**
@@ -427,13 +515,14 @@ git branch -d feature-name
 1. 📁 **File organization** → Always use correct directory structure (see above)
 2. 🚫 **NO EMOJIS IN UI/UX CODE** → Delete any emojis from user-facing code immediately
 3. 📐 **Design changes?** → Check `docs/DESIGN_STANDARDS.md` first
-4. 🔧 **Code changes?** → Complete pre-push checklist
-5. 🛑 **Wait for user signal** → Only run git commands when user says "OK let's merge" or similar
-6. 🐌 **Execute git commands ONE AT A TIME** → Never batch git commands
-7. 🚂 **Deployment?** → Ensure Railway compatibility
-8. 🚫 **Never create Pull Requests** → Branch → Merge to main → Delete branches
-9. ✅ **Always verify locally before pushing**
-10. 🧹 **Keep it clean** → Always delete branches after merging
+4. 🔍 **New features?** → Examine existing patterns before implementing
+5. 🔧 **Code changes?** → Complete pre-push checklist
+6. 🛑 **Wait for user signal** → Only run git commands when user says "OK let's merge" or similar
+7. 🐌 **Execute git commands ONE AT A TIME** → Never batch git commands
+8. 🚂 **Deployment?** → Ensure Railway compatibility
+9. 🚫 **Never create Pull Requests** → Branch → Merge to main → Delete branches
+10. ✅ **Always verify locally before pushing**
+11. 🧹 **Keep it clean** → Always delete branches after merging
 
 ---
 
