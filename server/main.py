@@ -584,6 +584,75 @@ def get_homes():
     }
 
 
+@app.get("/api/sf/plan-types")
+def get_plan_types():
+    """
+    Fetch all Plan Types with related lookups
+    """
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    # Connect to Salesforce
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+    
+    soql = """
+    SELECT
+        Id,
+        Plan_Type_Unique_Id__c,
+        of_Homes__c,
+        Home_Sq_Ft__c,
+        Roofing_Type__c,
+        of_Stories__c,
+        PV_Size__c,
+        PV_Panel__r.Name,
+        Inverter_Type__r.Name,
+        Battery_Model__r.Name,
+        Active_Plan_Type__c
+    FROM Plan_Type__c
+    ORDER BY LastModifiedDate DESC
+    LIMIT 200
+    """
+    
+    result = sf.query_all(soql)
+    records = result.get('records', [])
+    
+    # Process plan types
+    plan_types = []
+    for record in records:
+        # Helper to get lookup field
+        def get_lookup(obj, field):
+            return obj.get(field, '') if isinstance(obj, dict) else ''
+        
+        plan_type = {
+            "Id": record.get('Id', ''),
+            "Plan_Type_Unique_Id": record.get('Plan_Type_Unique_Id__c', ''),
+            "Number_of_Homes": record.get('of_Homes__c', ''),
+            "Home_Sq_Ft": record.get('Home_Sq_Ft__c', ''),
+            "Roofing_Type": record.get('Roofing_Type__c', ''),
+            "Number_of_Stories": record.get('of_Stories__c', ''),
+            "PV_Size": record.get('PV_Size__c', ''),
+            "PV_Panel_Model": get_lookup(record.get('PV_Panel__r'), 'Name'),
+            "Inverter_Model": get_lookup(record.get('Inverter_Type__r'), 'Name'),
+            "Battery_Model": get_lookup(record.get('Battery_Model__r'), 'Name'),
+            "Active_Plan_Type": record.get('Active_Plan_Type__c', False),
+        }
+        plan_types.append(plan_type)
+    
+    return {
+        "plan_types": plan_types,
+        "totalSize": len(plan_types)
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
 

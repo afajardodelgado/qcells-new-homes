@@ -890,6 +890,171 @@ window.closeHomeDetails = closeHomeDetails;
 loadHomesBtn?.addEventListener('click', loadHomes);
 homeSearchInput?.addEventListener('input', filterHomes);
 
+// Plan Types functionality
+const loadPlanTypesBtn = document.getElementById('loadPlanTypes');
+const planTypesTableDiv = document.getElementById('planTypesTable');
+const planTypeSearchInput = document.getElementById('planTypeSearch');
+
+let allPlanTypes = [];
+let planTypesSortColumn = null;
+let planTypesSortDirection = 'asc';
+
+function renderPlanTypes(planTypes) {
+  if (!planTypes || planTypes.length === 0) {
+    planTypesTableDiv.innerHTML = '<p>No plan types found.</p>';
+    return;
+  }
+  
+  const getSortIcon = (column) => {
+    if (planTypesSortColumn !== column) return '';
+    return planTypesSortDirection === 'asc' ? ' ▲' : ' ▼';
+  };
+  
+  // Build table with sortable headers
+  let tableHTML = `
+    <div style="flex: 1; overflow-y: auto; min-height: 0;">
+      <table class="builders-table">
+        <thead>
+          <tr>
+            <th onclick="sortPlanTypes('Plan_Type_Unique_Id')" style="cursor: pointer;">Plan Type ID${getSortIcon('Plan_Type_Unique_Id')}</th>
+            <th onclick="sortPlanTypes('Number_of_Homes')" style="cursor: pointer;"># of Homes${getSortIcon('Number_of_Homes')}</th>
+            <th onclick="sortPlanTypes('Home_Sq_Ft')" style="cursor: pointer;">Home Sq. Ft.${getSortIcon('Home_Sq_Ft')}</th>
+            <th onclick="sortPlanTypes('Roofing_Type')" style="cursor: pointer;">Roofing Type${getSortIcon('Roofing_Type')}</th>
+            <th onclick="sortPlanTypes('Number_of_Stories')" style="cursor: pointer;"># of Stories${getSortIcon('Number_of_Stories')}</th>
+            <th onclick="sortPlanTypes('PV_Size')" style="cursor: pointer;">System Size (W)${getSortIcon('PV_Size')}</th>
+            <th onclick="sortPlanTypes('PV_Panel_Model')" style="cursor: pointer;">PV Panel Model${getSortIcon('PV_Panel_Model')}</th>
+            <th onclick="sortPlanTypes('Inverter_Model')" style="cursor: pointer;">Inverter Model${getSortIcon('Inverter_Model')}</th>
+            <th onclick="sortPlanTypes('Battery_Model')" style="cursor: pointer;">Battery Model${getSortIcon('Battery_Model')}</th>
+            <th onclick="sortPlanTypes('Active_Plan_Type')" style="cursor: pointer;">Active${getSortIcon('Active_Plan_Type')}</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+  
+  planTypes.forEach(planType => {
+    tableHTML += `
+      <tr>
+        <td>${planType.Plan_Type_Unique_Id || '—'}</td>
+        <td>${planType.Number_of_Homes || '—'}</td>
+        <td>${planType.Home_Sq_Ft || '—'}</td>
+        <td>${planType.Roofing_Type || '—'}</td>
+        <td>${planType.Number_of_Stories || '—'}</td>
+        <td>${planType.PV_Size || '—'}</td>
+        <td>${planType.PV_Panel_Model || '—'}</td>
+        <td>${planType.Inverter_Model || '—'}</td>
+        <td>${planType.Battery_Model || '—'}</td>
+        <td>${planType.Active_Plan_Type === true ? '☑' : '☐'}</td>
+      </tr>
+    `;
+  });
+  
+  tableHTML += `
+        </tbody>
+      </table>
+    </div>
+    <p class="table-footer">Showing ${planTypes.length} of ${allPlanTypes.length} plan types</p>
+  `;
+  
+  planTypesTableDiv.innerHTML = tableHTML;
+}
+
+async function loadPlanTypes() {
+  planTypesTableDiv.innerHTML = '<p>Loading plan types...</p>';
+  try {
+    const res = await fetch('/api/sf/plan-types');
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(typeof data === 'string' ? data : JSON.stringify(data));
+    
+    allPlanTypes = data.plan_types || [];
+    renderPlanTypes(allPlanTypes);
+  } catch (err) {
+    planTypesTableDiv.innerHTML = `<p class="error">Error: ${err.message}</p>`;
+  }
+}
+
+function filterPlanTypes() {
+  const searchTerm = planTypeSearchInput.value.toLowerCase().trim();
+  
+  let filtered;
+  if (!searchTerm) {
+    filtered = [...allPlanTypes];
+  } else {
+    filtered = allPlanTypes.filter(planType => {
+      const planId = (planType.Plan_Type_Unique_Id || '').toLowerCase();
+      const roofing = (planType.Roofing_Type || '').toLowerCase();
+      const pvPanel = (planType.PV_Panel_Model || '').toLowerCase();
+      const inverter = (planType.Inverter_Model || '').toLowerCase();
+      const battery = (planType.Battery_Model || '').toLowerCase();
+      
+      return planId.includes(searchTerm) ||
+             roofing.includes(searchTerm) ||
+             pvPanel.includes(searchTerm) ||
+             inverter.includes(searchTerm) ||
+             battery.includes(searchTerm);
+    });
+  }
+  
+  // Apply current sort if active
+  if (planTypesSortColumn) {
+    filtered.sort((a, b) => {
+      const aVal = (a[planTypesSortColumn] || '').toString().toLowerCase();
+      const bVal = (b[planTypesSortColumn] || '').toString().toLowerCase();
+      
+      if (aVal < bVal) return planTypesSortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return planTypesSortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+  
+  renderPlanTypes(filtered);
+}
+
+function sortPlanTypes(column) {
+  // Toggle direction if same column, otherwise default to ascending
+  if (planTypesSortColumn === column) {
+    planTypesSortDirection = planTypesSortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    planTypesSortColumn = column;
+    planTypesSortDirection = 'asc';
+  }
+  
+  // Get current filtered data
+  const searchTerm = planTypeSearchInput.value.toLowerCase().trim();
+  let dataToSort = searchTerm ? 
+    allPlanTypes.filter(planType => {
+      const planId = (planType.Plan_Type_Unique_Id || '').toLowerCase();
+      const roofing = (planType.Roofing_Type || '').toLowerCase();
+      const pvPanel = (planType.PV_Panel_Model || '').toLowerCase();
+      const inverter = (planType.Inverter_Model || '').toLowerCase();
+      const battery = (planType.Battery_Model || '').toLowerCase();
+      
+      return planId.includes(searchTerm) ||
+             roofing.includes(searchTerm) ||
+             pvPanel.includes(searchTerm) ||
+             inverter.includes(searchTerm) ||
+             battery.includes(searchTerm);
+    }) : [...allPlanTypes];
+  
+  // Sort
+  dataToSort.sort((a, b) => {
+    const aVal = (a[column] || '').toString().toLowerCase();
+    const bVal = (b[column] || '').toString().toLowerCase();
+    
+    if (aVal < bVal) return planTypesSortDirection === 'asc' ? -1 : 1;
+    if (aVal > bVal) return planTypesSortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+  
+  renderPlanTypes(dataToSort);
+}
+
+// Make sortPlanTypes available globally
+window.sortPlanTypes = sortPlanTypes;
+
+loadPlanTypesBtn?.addEventListener('click', loadPlanTypes);
+planTypeSearchInput?.addEventListener('input', filterPlanTypes);
+
 // Navigation
 const navItems = document.querySelectorAll('.nav-item');
 const sections = {
@@ -919,6 +1084,8 @@ navItems.forEach(item => {
       loadCommunities();
     } else if (target === 'new-homes') {
       loadHomes();
+    } else if (target === 'pricing') {
+      loadPlanTypes();
     }
   });
 });

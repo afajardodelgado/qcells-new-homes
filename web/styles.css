@@ -138,7 +138,8 @@ body {
 
 #section-builders .card,
 #section-communities .card,
-#section-new-homes .card {
+#section-new-homes .card,
+#section-pricing .card {
   max-width: none;
   flex: 1;
   min-height: 0;
@@ -273,7 +274,8 @@ body {
 
 #buildersTable,
 #communitiesTable,
-#homesTable {
+#homesTable,
+#planTypesTable {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
