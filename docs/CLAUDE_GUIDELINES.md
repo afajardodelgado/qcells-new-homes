@@ -437,7 +437,148 @@ git branch -d feature-name
 
 ---
 
-**Last Updated**: October 2, 2025
+## UI/UX Pattern: Accordion Layout
+
+### Overview
+The accordion layout pattern is used for master-detail views where clicking a table row expands a detail panel to the right while compressing the main table to the left.
+
+### Implementation Pattern
+
+**HTML Structure:**
+```html
+<section id="section-name" class="section visible">
+  <div class="accordion-layout" id="layoutId">
+    <!-- Master view (table) -->
+    <div class="card master-card">
+      <div id="tableContainer"></div>
+    </div>
+    
+    <!-- Detail panel (hidden by default) -->
+    <div class="card detail-card" id="detailPanel">
+      <div id="detailContent"></div>
+    </div>
+  </div>
+</section>
+```
+
+**CSS Requirements:**
+```css
+/* Default: Full-width master view */
+.accordion-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  transition: grid-template-columns 0.3s ease;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Split view: 50/50 layout */
+.accordion-layout.split-view {
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Master and detail cards */
+.master-card,
+.detail-card {
+  min-width: 0;
+  min-height: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Detail card hidden by default */
+.detail-card {
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.2s;
+}
+
+/* Show detail card in split view */
+.accordion-layout.split-view .detail-card {
+  opacity: 1;
+}
+
+/* Adjust table sizing in split view */
+.accordion-layout.split-view .master-table td {
+  max-width: 150px;
+  font-size: 13px;
+}
+
+.accordion-layout.split-view .master-table th {
+  font-size: 10px;
+  padding: 8px 10px;
+}
+```
+
+**JavaScript Pattern:**
+```javascript
+// Get layout container
+const layoutContainer = document.getElementById('layoutId');
+
+// When clicking a row
+async function selectItem(itemId) {
+  selectedItemId = itemId;
+  
+  // Show split view
+  layoutContainer.classList.add('split-view');
+  
+  // Re-render table to show selected state
+  renderTable(currentData);
+  
+  // Load detail data
+  const detailData = await fetchDetailData(itemId);
+  renderDetailPanel(detailData);
+}
+
+// Close detail panel
+function closeDetail() {
+  selectedItemId = null;
+  layoutContainer.classList.remove('split-view');
+  renderTable(currentData);
+}
+
+// Make functions globally available
+window.selectItem = selectItem;
+window.closeDetail = closeDetail;
+```
+
+**Detail Panel Header Pattern:**
+```javascript
+builderInfoDiv.innerHTML = `
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+    <h3 style="margin: 0;">Detail Title</h3>
+    <button onclick="closeDetail()" class="btn" style="padding: 4px 12px; font-size: 12px;">✕ Close</button>
+  </div>
+  <!-- Detail content here -->
+`;
+```
+
+### Key Features
+
+1. **Smooth Transitions**: CSS transitions for grid layout and opacity changes
+2. **Responsive Columns**: Table columns shrink in split view
+3. **Selected State**: Row highlighting persists through sorting/filtering
+4. **Close Button**: Always provide a way to collapse back to full view
+5. **Flexible Content**: Detail panel can contain any content structure
+
+### Design Principles
+
+- **Default state**: Full-width master view maximizes data visibility
+- **Split view**: 50/50 split for balanced master-detail layout
+- **Animations**: 300ms transitions for smooth user experience
+- **Mobile**: Consider full-screen detail overlay on smaller screens
+
+### Common Use Cases
+
+- **Builders → Divisions**: Show builder list, expand to see divisions
+- **Communities → Homes**: Show community list, expand to see homes
+- **Projects → Details**: Show project list, expand to see project details
+
+---
+
+**Last Updated**: October 6, 2025
 **Project**: Q.CELLS New Homes Solar Support Suite
 **Deployment**: Railway
 **Branch Strategy**: Feature branches → Merge to main → Delete branches (no PRs)

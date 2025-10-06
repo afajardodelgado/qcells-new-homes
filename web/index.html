@@ -23,6 +23,24 @@
             </span>
             <span>Builders</span>
           </a>
+          <a class="nav-item" data-section="communities">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.5 8.33333L7.5 4.16667L12.5 8.33333V15.8333H2.5V8.33333Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M12.5 6.66667L17.5 10.8333V15.8333H12.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M5.83333 15.8333V12.5H9.16667V15.8333" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>Communities</span>
+          </a>
+          <a class="nav-item" data-section="new-homes">
+            <span class="icon">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M3.33333 10L10 3.33333L16.6667 10M5 8.33333V15.8333C5 16.2936 5.37309 16.6667 5.83333 16.6667H8.33333C8.79357 16.6667 9.16667 16.2936 9.16667 15.8333V12.5C9.16667 12.0398 9.53976 11.6667 10 11.6667C10.4602 11.6667 10.8333 12.0398 10.8333 12.5V15.8333C10.8333 16.2936 11.2064 16.6667 11.6667 16.6667H14.1667C14.6269 16.6667 15 16.2936 15 15.8333V8.33333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>Homes</span>
+          </a>
           <a class="nav-item" data-section="pricing">
             <span class="icon">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -77,6 +95,60 @@
           <h1 class="title">Qcells New Homes: Builder and Installer Admin Portal</h1>
         </header>
 
+        <section id="section-builders" class="section visible">
+          <div class="builders-layout" id="buildersLayout">
+            <div class="card builders-card">
+              <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0;">National Builders</h3>
+                <button id="loadBuilders" class="btn primary">Refresh</button>
+              </div>
+              <div class="row" style="margin-bottom: 16px;">
+                <input 
+                  type="text" 
+                  id="builderSearch" 
+                  class="input" 
+                  placeholder="Search by name, city, state, or website..."
+                />
+              </div>
+              <div id="buildersTable"></div>
+            </div>
+            
+            <div class="card divisions-card" id="divisionsPanel">
+              <div id="builderInfo"></div>
+              <div id="divisionsTable"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-communities" class="section">
+          <div class="card">
+            <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="margin: 0;">Communities</h3>
+              <button id="loadCommunities" class="btn primary">Refresh</button>
+            </div>
+            <div class="row" style="margin-bottom: 16px;">
+              <input 
+                type="text" 
+                id="communitySearch" 
+                class="input" 
+                placeholder="Search by division, builder, city, state, account manager..."
+              />
+            </div>
+            <div id="communitiesTable"></div>
+          </div>
+        </section>
+
+        <section id="section-new-homes" class="section">
+          <div class="card">
+            <h3>Homes</h3>
+            <p>Homes content coming soon...</p>
+          </div>
+        </section>
+
+        <section id="section-pricing" class="section"><h2>Pricing</h2></section>
+        <section id="section-marketing" class="section"><h2>Marketing</h2></section>
+        <section id="section-training" class="section"><h2>Training</h2></section>
+        <section id="section-support" class="section"><h2>Support</h2></section>
         <section id="section-homes" class="section">
           <h2>Salesforce Connector</h2>
           <div class="card">
@@ -88,29 +160,6 @@
             <pre id="output" class="output">Click Run Query to call /api/sf/query</pre>
           </div>
         </section>
-
-        <section id="section-builders" class="section visible">
-          <div class="card">
-            <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
-              <h3 style="margin: 0;">National Builders</h3>
-              <button id="loadBuilders" class="btn primary">Refresh</button>
-            </div>
-            <div class="row" style="margin-bottom: 16px;">
-              <input 
-                type="text" 
-                id="builderSearch" 
-                class="input" 
-                placeholder="Search by name, city, state, or website..."
-              />
-            </div>
-            <div id="buildersTable"></div>
-          </div>
-        </section>
-
-        <section id="section-pricing" class="section"><h2>Pricing</h2></section>
-        <section id="section-marketing" class="section"><h2>Marketing</h2></section>
-        <section id="section-training" class="section"><h2>Training</h2></section>
-        <section id="section-support" class="section"><h2>Support</h2></section>
       </main>
     </div>
 

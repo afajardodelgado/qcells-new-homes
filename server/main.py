@@ -280,6 +280,7 @@ def get_builders():
     # Query National Builders
     soql = """
     SELECT 
+        Id,
         Name, 
         Headquarters_Address__c,
         Website__c
@@ -294,6 +295,7 @@ def get_builders():
         hq_address = record.get('Headquarters_Address__c', {})
         
         builder = {
+            "Id": record.get('Id', ''),
             "Name": record.get('Name', ''),
             "City": hq_address.get('city', '') if isinstance(hq_address, dict) else '',
             "State": hq_address.get('state', '') if isinstance(hq_address, dict) else '',
@@ -304,6 +306,150 @@ def get_builders():
     return {
         "builders": builders,
         "totalSize": len(builders)
+    }
+
+
+@app.get("/api/sf/communities")
+def get_communities():
+    """Get all Divisions with parent (National Builder) fields"""
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    # Connect to Salesforce
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+
+    # Query all Divisions with parent (National Builder) fields
+    soql = """
+    SELECT
+        Id,
+        Name,
+        Division_Address__c,
+        National_Builder__c,
+        National_Builder__r.Name,
+        National_Builder__r.Service_Territories__c,
+        National_Builder__r.Builder_ID_Code__c,
+        National_Builder__r.Headquarters_Address__c,
+        National_Builder__r.National_Account_Status__c,
+        National_Builder__r.Account_Manager__c,
+        National_Builder__r.Account_Manager__r.Name
+    FROM Division__c
+    """
+
+    result = sf.query_all(soql)
+    records = result.get('records', [])
+    
+    # Process all divisions
+    communities = []
+    for record in records:
+        div_address = record.get('Division_Address__c', {})
+        parent = record.get('National_Builder__r', {})
+        hq_address = parent.get('Headquarters_Address__c', {})
+        account_mgr = parent.get('Account_Manager__r', {})
+        
+        community = {
+            "Division_Id": record.get('Id', ''),
+            "Division_Name": record.get('Name', ''),
+            "Division_City": div_address.get('city', '') if isinstance(div_address, dict) else '',
+            "Division_State": div_address.get('state', '') if isinstance(div_address, dict) else '',
+            "Builder_Name": parent.get('Name', '') if isinstance(parent, dict) else '',
+            "Builder_ID_Code": parent.get('Builder_ID_Code__c', '') if isinstance(parent, dict) else '',
+            "National_Account_Status": parent.get('National_Account_Status__c', '') if isinstance(parent, dict) else '',
+            "Service_Territories": parent.get('Service_Territories__c', '') if isinstance(parent, dict) else '',
+            "Account_Manager_Name": account_mgr.get('Name', '') if isinstance(account_mgr, dict) else '',
+            "HQ_City": hq_address.get('city', '') if isinstance(hq_address, dict) else '',
+            "HQ_State": hq_address.get('state', '') if isinstance(hq_address, dict) else '',
+            "National_Builder__c": record.get('National_Builder__c', ''),
+        }
+        communities.append(community)
+    
+    return {
+        "communities": communities,
+        "totalSize": len(communities)
+    }
+
+
+@app.get("/api/sf/divisions/{builder_id}")
+def get_divisions(builder_id: str):
+    """Get Divisions for a specific National Builder with parent fields"""
+    try:
+        auth = mint_access_token(LOGIN_URL, CLIENT_ID, USERNAME, KEY_PATH, PRIVATE_KEY_CONTENT)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    try:
+        from simple_salesforce import Salesforce
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"simple-salesforce not installed: {e}")
+
+    # Connect to Salesforce
+    sf = Salesforce(instance_url=auth["instance_url"], session_id=auth["access_token"])
+
+    # Query Divisions with parent (National Builder) fields
+    soql = f"""
+    SELECT
+        Id,
+        Name,
+        Division_Address__c,
+        National_Builder__c,
+        National_Builder__r.Name,
+        National_Builder__r.Service_Territories__c,
+        National_Builder__r.Builder_ID_Code__c,
+        National_Builder__r.Headquarters_Address__c,
+        National_Builder__r.National_Account_Status__c,
+        National_Builder__r.Account_Manager__c,
+        National_Builder__r.Account_Manager__r.Name
+    FROM Division__c
+    WHERE National_Builder__c = '{builder_id}'
+    """
+
+    result = sf.query_all(soql)
+    records = result.get('records', [])
+    
+    # Builder info (from first record's parent, if any)
+    builder_info = None
+    if records:
+        parent = records[0].get('National_Builder__r', {})
+        hq_address = parent.get('Headquarters_Address__c', {})
+        account_mgr = parent.get('Account_Manager__r', {})
+        
+        builder_info = {
+            "Name": parent.get('Name', ''),
+            "Builder_ID_Code": parent.get('Builder_ID_Code__c', ''),
+            "National_Account_Status": parent.get('National_Account_Status__c', ''),
+            "Service_Territories": parent.get('Service_Territories__c', ''),
+            "Account_Manager_Name": account_mgr.get('Name', '') if isinstance(account_mgr, dict) else '',
+            "HQ_City": hq_address.get('city', '') if isinstance(hq_address, dict) else '',
+            "HQ_State": hq_address.get('state', '') if isinstance(hq_address, dict) else '',
+        }
+    
+    # Process divisions
+    divisions = []
+    for record in records:
+        div_address = record.get('Division_Address__c', {})
+        
+        division = {
+            "Division_Id": record.get('Id', ''),
+            "Division_Name": record.get('Name', ''),
+            "Division_City": div_address.get('city', '') if isinstance(div_address, dict) else '',
+            "Division_State": div_address.get('state', '') if isinstance(div_address, dict) else '',
+        }
+        divisions.append(division)
+    
+    return {
+        "builder_info": builder_info,
+        "divisions": divisions,
+        "totalSize": len(divisions)
     }
 
 
