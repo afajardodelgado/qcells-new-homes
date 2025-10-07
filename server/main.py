@@ -619,7 +619,6 @@ def get_plan_types():
         Active_Plan_Type__c
     FROM Plan_Type__c
     ORDER BY LastModifiedDate DESC
-    LIMIT 200
     """
     
     result = sf.query_all(soql)
